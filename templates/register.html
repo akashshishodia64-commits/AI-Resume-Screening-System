@@ -1,0 +1,16 @@
+{% extends "auth_base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Create account{% endblock %}
+{% block auth_form %}
+<h1>Create account</h1>
+<p class="muted">Your data stays in a local SQLite database on this computer.</p>
+<form method="post" novalidate>
+  {{ csrf() }}
+  <label class="field"><span>Username</span><input name="username" value="{{ form.get('username','') }}" autocomplete="username" required minlength="3" maxlength="30"></label>
+  <label class="field"><span>Email</span><input type="email" name="email" value="{{ form.get('email','') }}" autocomplete="email" required></label>
+  <label class="field"><span>Password</span><input type="password" name="password" autocomplete="new-password" required minlength="8"><small class="muted">At least 8 characters with letters and numbers.</small></label>
+  <label class="field"><span>Confirm password</span><input type="password" name="confirm_password" autocomplete="new-password" required></label>
+  <button class="btn btn-primary btn-block" type="submit">Create account</button>
+</form>
+<p class="muted small center">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+{% endblock %}

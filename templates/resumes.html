@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, empty_state, icon with context %}
+{% block title %}Resume Analysis{% endblock %}
+{% block actions %}<a class="btn btn-primary" href="{{ url_for('resumes.upload') }}">{{ icon('upload') }} Upload</a>{% endblock %}
+{% block content %}
+<section class="card">
+  <form class="toolbar" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by name, file or skill…" aria-label="Search resumes">
+    <button class="btn" type="submit">Search</button>{% if q %}<a class="btn btn-ghost" href="{{ url_for('resumes.index') }}">Clear</a>{% endif %}
+  </form>
+  {% if resumes %}
+  <div class="table-wrap"><table class="table"><thead><tr><th>Candidate</th><th>Contact</th><th>Education</th><th>Exp.</th><th>Skills</th><th>Best match</th><th>Uploaded</th></tr></thead><tbody>
+    {% for r in resumes %}<tr>
+      <td><a href="{{ url_for('resumes.detail', resume_id=r.id) }}"><strong>{{ r.name }}</strong></a><br><small class="muted">{{ r.original_filename }} · {{ r.file_size|filesize }}</small></td>
+      <td class="small">{{ r.email or '–' }}</td><td class="small">{{ r.highest_education or '–' }}</td>
+      <td>{{ '%g'|format(r.total_experience_years) }} yr</td><td>{{ r.skill_count }}</td>
+      <td class="w-score">{% if r.best_score is not none %}{{ score_bar(r.best_score) }}{% else %}<span class="muted small">Not matched</span>{% endif %}</td>
+      <td class="muted small">{{ r.uploaded_at[:16] }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}{{ empty_state('No resumes found', 'Upload PDF or DOCX resumes to see the extracted analysis here.', url_for('resumes.upload'), 'Upload resumes') }}{% endif %}
+</section>
+{% endblock %}

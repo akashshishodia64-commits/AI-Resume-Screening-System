@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, icon with context %}
+{% block title %}Upload Resume{% endblock %}
+{% block content %}
+<section class="grid-2 wide-left">
+  <article class="card">
+    <div class="card-head"><h2>Upload resumes</h2><span class="muted small">PDF or DOCX · max {{ max_mb }} MB each · up to {{ limit }} files</span></div>
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+      {{ csrf() }}
+      <label class="dropzone" id="dropzone" for="fileInput">
+        {{ icon('upload') }}
+        <strong>Drag &amp; drop resumes here</strong>
+        <span class="muted">or click to browse</span>
+        <input id="fileInput" type="file" name="resumes" accept=".pdf,.docx" multiple>
+      </label>
+      <ul class="file-list" id="fileList" aria-live="polite"></ul>
+      <button class="btn btn-primary" type="submit" id="uploadBtn" disabled>Analyse resumes</button>
+    </form>
+  </article>
+  <article class="card">
+    <h2>What happens next</h2>
+    <ol class="steps">
+      <li>Text is extracted from each file (corrupted, empty or scanned documents are reported, not stored).</li>
+      <li>NLP finds contact details, education, experience, projects, certifications and skills.</li>
+      <li>Create a job description, then run matching to rank your candidates.</li>
+    </ol>
+    <p class="muted small">Files are stored privately per account and are only served to you after sign-in. Scanned image PDFs need OCR, which is not included.</p>
+  </article>
+</section>
+
+{% if results %}
+<section class="card">
+  <div class="card-head"><h2>Upload results</h2></div>
+  <table class="table"><thead><tr><th>File</th><th>Status</th><th>Details</th><th></th></tr></thead><tbody>
+  {% for r in results %}
+    <tr><td>{{ r.filename }}</td>
+      <td><span class="badge {{ 'band-high' if r.ok else 'band-vlow' }}">{{ 'Analysed' if r.ok else 'Not added' }}</span></td>
+      <td>{{ r.message }}</td>
+      <td>{% if r.resume_id %}<a href="{{ url_for('resumes.detail', resume_id=r.resume_id) }}">Open</a>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  <p><a class="btn btn-primary" href="{{ url_for('matching.index') }}">Continue to matching</a></p>
+</section>
+{% endif %}
+{% endblock %}

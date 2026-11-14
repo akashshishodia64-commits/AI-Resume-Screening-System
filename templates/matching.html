@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, band_badge, csrf, empty_state with context %}
+{% block title %}Resume Matching{% endblock %}
+{% block content %}
+<div class="alert alert-info">{{ disclaimer }}</div>
+{% if not jobs or not resumes %}
+<section class="card">{{ empty_state('Add a job and resumes first', 'Matching needs at least one job description and one uploaded resume.', url_for('jobs.create') if not jobs else url_for('resumes.upload'), 'Create a job' if not jobs else 'Upload resumes') }}</section>
+{% else %}
+<section class="grid-2 wide-left">
+  <article class="card">
+    <div class="card-head"><h2>Run a match</h2></div>
+    <form method="post" action="{{ url_for('matching.run') }}">
+      {{ csrf() }}
+      <label class="field"><span>Job description</span>
+        <select name="job_id" required>{% for j in jobs %}<option value="{{ j.id }}" {{ 'selected' if j.id == selected_job }}>{{ j.title }}</option>{% endfor %}</select></label>
+      <div class="field"><span>Resumes <label class="inline small"><input type="checkbox" id="selectAll" checked> select all</label></span>
+        <div class="checklist">{% for r in resumes %}<label><input type="checkbox" name="resume_ids" value="{{ r.id }}" checked> <strong>{{ r.name }}</strong> <small class="muted">{{ r.original_filename }}</small></label>{% endfor %}</div></div>
+      <button class="btn btn-primary" type="submit">Calculate match scores</button>
+    </form>
+  </article>
+  <article class="card"><h2>How scores are built</h2>
+    <ul class="plain small">
+      <li><strong>Skills ({{ (weights.skills*100)|round|int }}%)</strong> – required skills found in the resume</li>
+      <li><strong>TF-IDF ({{ (weights.tfidf*100)|round|int }}%)</strong> – cosine similarity of preprocessed text</li>
+      <li><strong>Keywords ({{ (weights.keywords*100)|round|int }}%)</strong> – job keywords present in the resume</li>
+      <li><strong>Experience ({{ (weights.experience*100)|round|int }}%)</strong> – estimated years vs. requirement</li>
+    </ul><p class="muted small">Unused components are dropped and weights renormalised. Adjust weights in Settings.</p></article>
+</section>
+{% endif %}
+{% if recent %}
+<section class="card"><div class="card-head"><h2>Recent match results</h2></div>
+  <table class="table"><thead><tr><th>Candidate</th><th>Job</th><th class="w-score">Similarity</th><th>Alignment</th><th></th></tr></thead><tbody>
+  {% for m in recent %}<tr><td>{{ m.candidate_name }}</td><td>{{ m.job_title }}</td><td>{{ score_bar(m.overall_score) }}</td><td>{{ band_badge(m.overall_score) }}</td><td><a href="{{ url_for('matching.result', match_id=m.id) }}">Details</a></td></tr>{% endfor %}
+  </tbody></table></section>
+{% endif %}
+{% endblock %}

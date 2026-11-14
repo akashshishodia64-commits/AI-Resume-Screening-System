@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, band_badge, csrf, empty_state, icon with context %}
+{% block title %}Candidate Ranking{% endblock %}
+{% block actions %}{% if job and total %}
+  <a class="btn" href="{{ url_for('reports.ranking_csv', job_id=job.id) }}">{{ icon('download') }} CSV</a>
+  <a class="btn" href="{{ url_for('reports.ranking_pdf', job_id=job.id) }}">{{ icon('download') }} PDF</a>{% endif %}{% endblock %}
+{% block content %}
+{% if not jobs %}
+<section class="card">{{ empty_state('No jobs yet', 'Create a job description and run matching to rank candidates.', url_for('jobs.create'), 'Create a job') }}</section>
+{% else %}
+<div class="alert alert-info">{{ disclaimer }} Ranking order is a convenience for review - no one is rejected automatically.</div>
+<section class="card">
+  <form class="filters" method="get">
+    <label class="field"><span>Job</span><select name="job_id" data-autosubmit>{% for j in jobs %}<option value="{{ j.id }}" {{ 'selected' if job and j.id == job.id }}>{{ j.title }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Min similarity: <b id="minOut">{{ '%g'|format(filters.min_score) }}</b>%</span><input type="range" name="min_score" min="0" max="100" step="5" value="{{ filters.min_score }}" id="minRange"></label>
+    <label class="field"><span>Must have skill(s)</span><input name="skill" value="{{ filters.skill }}" placeholder="e.g. Python, SQL"></label>
+    <label class="field"><span>Candidate name</span><input type="search" name="q" value="{{ filters.q }}" placeholder="Search…"></label>
+    <label class="field"><span>Sort by</span><select name="sort" data-autosubmit>
+      {% for v, l in [('score','Similarity score'),('skills','Skill match'),('experience','Experience'),('name','Name')] %}<option value="{{ v }}" {{ 'selected' if filters.sort == v }}>{{ l }}</option>{% endfor %}</select></label>
+    <div class="filter-actions"><button class="btn btn-primary" type="submit">Apply</button><a class="btn btn-ghost" href="{{ url_for('matching.ranking', job_id=job.id) }}">Reset</a></div>
+  </form>
+</section>
+
+{% if total == 0 %}
+<section class="card">{{ empty_state('No results for this job yet', 'Run matching to score your resumes against "' ~ job.title ~ '".', url_for('matching.index', job_id=job.id), 'Run matching') }}</section>
+{% else %}
+{% if results %}
+<section class="card"><div class="card-head"><h2>Top candidates</h2><span class="muted small">{{ results|length }} of {{ total }} shown</span></div>
+  <div class="chart-box"><canvas data-chart='{{ chart|tojson }}'></canvas></div></section>
+{% endif %}
+<section class="card"><div class="card-head"><h2>{{ job.title }}</h2><span class="muted small">Required: {{ job.required_skills|join(', ') or 'none specified' }}</span></div>
+  {% if results %}
+  <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Candidate</th><th class="w-score">Similarity</th><th>Alignment</th><th>Skills</th><th>Exp.</th><th>Matched / missing</th><th></th></tr></thead><tbody>
+    {% for r in results %}<tr>
+      <td><span class="rank">{{ r.rank }}</span></td>
+      <td><a href="{{ url_for('resumes.detail', resume_id=r.resume_id) }}"><strong>{{ r.candidate_name }}</strong></a><br><small class="muted">{{ r.highest_education or 'Education n/a' }}</small></td>
+      <td>{{ score_bar(r.overall_score) }}</td><td>{{ band_badge(r.overall_score) }}</td>
+      <td>{{ r.skill_score|pct(0) if r.skill_score is not none else '–' }}</td><td>{{ '%g'|format(r.total_experience_years) }} yr</td>
+      <td class="small"><span class="ok">{{ r.matched_skills|length }}</span> / <span class="warn">{{ r.missing_skills|length }}</span></td>
+      <td><div class="row-actions"><a href="{{ url_for('matching.result', match_id=r.id) }}">Details</a>
+        <form method="post" action="{{ url_for('matching.flag', match_id=r.id) }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+          <button class="icon-btn star {{ 'on' if r.is_shortlisted }}" type="submit" title="{{ 'Remove flag' if r.is_shortlisted else 'Flag for human review' }}" aria-label="Flag for review">{{ icon('star') }}</button></form></div></td>
+    </tr>{% endfor %}
+  </tbody></table></div>
+  {% else %}<p class="muted">No candidates match these filters.</p>{% endif %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

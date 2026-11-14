@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block shell %}
+<div class="auth-wrap single"><section class="auth-card center">
+  <p class="err-code">{{ code }}</p><h1>{{ title }}</h1><p class="muted">{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('dashboard.index') }}">Back to dashboard</a>
+</section></div>
+{% endblock %}

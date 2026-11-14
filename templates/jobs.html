@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import chips, csrf, empty_state, icon with context %}
+{% block title %}Job Descriptions{% endblock %}
+{% block actions %}<a class="btn btn-primary" href="{{ url_for('jobs.create') }}">{{ icon('briefcase') }} New job</a>{% endblock %}
+{% block content %}
+{% if jobs %}
+<section class="job-grid">
+  {% for j in jobs %}
+  <article class="card job">
+    <div class="card-head"><h2>{{ j.title }}</h2>{% if j.match_count %}<span class="badge band-info">{{ j.match_count }} matched · avg {{ j.avg_score }}%</span>{% endif %}</div>
+    <p class="muted clamp">{{ j.description }}</p>
+    <h3 class="sub">Required skills</h3>{{ chips(j.skills, 'info', 'None specified') }}
+    <p class="small muted">Experience: {{ '%g'|format(j.min_experience_years) }}+ yrs{% if j.education_requirement %} · Education: {{ j.education_requirement }}{% endif %}</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('matching.index', job_id=j.id) }}">Match resumes</a>
+      {% if j.match_count %}<a class="btn" href="{{ url_for('matching.ranking', job_id=j.id) }}">Ranking</a>{% endif %}
+      <a class="btn btn-ghost" href="{{ url_for('jobs.edit', job_id=j.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('jobs.delete', job_id=j.id) }}" data-confirm="Delete this job and all its match results?">{{ csrf() }}<button class="btn btn-ghost danger-text" type="submit">Delete</button></form>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}<section class="card">{{ empty_state('No job descriptions yet', 'Add a job title, description, required skills and experience to start matching candidates.', url_for('jobs.create'), 'Create a job') }}</section>{% endif %}
+{% endblock %}

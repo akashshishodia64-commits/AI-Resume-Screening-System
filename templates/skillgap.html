@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, chips, empty_state with context %}
+{% block title %}Skill Gap Analysis{% endblock %}
+{% block content %}
+{% if not resumes or not jobs %}
+<section class="card">{{ empty_state('Need a resume and a job', 'Skill-gap analysis compares one candidate with one job description.', url_for('jobs.create') if not jobs else url_for('resumes.upload'), 'Get started') }}</section>
+{% else %}
+<section class="card">
+  <form class="filters two" method="get">
+    <label class="field"><span>Candidate</span><select name="resume_id" required>{% for r in resumes %}<option value="{{ r.id }}" {{ 'selected' if r.id == resume_id }}>{{ r.name }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Job</span><select name="job_id" required>{% for j in jobs %}<option value="{{ j.id }}" {{ 'selected' if j.id == job_id }}>{{ j.title }}</option>{% endfor %}</select></label>
+    <div class="filter-actions"><button class="btn btn-primary" type="submit">Analyse gap</button></div>
+  </form>
+</section>
+{% if gap %}
+<section class="card hero-score">
+  {% if gap.match_pct is not none %}<div class="gauge {{ gap.match_pct|band_css }}" style="--p:{{ gap.match_pct }}"><span>{{ '%.1f'|format(gap.match_pct) }}<small>%</small></span></div>{% endif %}
+  <div><h2>{{ resume.name }} <span class="muted">vs</span> {{ job.title }}</h2>
+    {% if gap.total_required %}<p><strong>Matched skills: {{ gap.matched_count }}</strong> · <strong>Missing skills: {{ gap.missing_count }}</strong> · <strong>Skill match: {{ '%.2f'|format(gap.match_pct) }}%</strong></p>
+    <p class="muted small">{{ gap.matched_count }} of {{ gap.total_required }} required skills are mentioned in the resume.</p>
+    {% else %}<p class="muted">This job lists no required skills. Edit the job to add some.</p>{% endif %}</div>
+</section>
+{% if gap.total_required %}
+<section class="grid-2">
+  <article class="card"><h2>Matched skills <span class="count">{{ gap.matched_count }}</span></h2>{{ chips(gap.matched, 'ok', 'None matched.') }}
+    <h3 class="sub">Additional skills on the resume</h3>{{ chips(gap.extra_skills[:20], 'info', 'None beyond the required list.') }}</article>
+  <article class="card"><h2>Missing skills <span class="count bad">{{ gap.missing_count }}</span></h2>{{ chips(gap.missing, 'bad', 'Every required skill is present.') }}</article>
+</section>
+<section class="card"><h2>Breakdown by category</h2>
+  <table class="table"><thead><tr><th>Category</th><th>Matched</th><th>Missing</th></tr></thead><tbody>
+  {% for cat, b in gap.by_category.items() %}<tr><td>{{ cat }}</td><td>{{ chips(b.matched, 'ok', '–') }}</td><td>{{ chips(b.missing, 'bad', '–') }}</td></tr>{% endfor %}
+  </tbody></table></section>
+<section class="card"><h2>Recommendations to improve the profile</h2>
+  {% if gap.recommendations %}<ul class="plain">{% for r in gap.recommendations %}<li>{{ r }}</li>{% endfor %}</ul>{% else %}<p class="muted">No gaps to close.</p>{% endif %}</section>
+{% endif %}
+{% endif %}
+{% endif %}
+{% endblock %}

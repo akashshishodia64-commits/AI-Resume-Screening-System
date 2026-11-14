@@ -1,0 +1,57 @@
+{% from "_macros.html" import icon, csrf with context %}
+<!doctype html>
+<html lang="en" data-theme="{{ theme }}"{% if not g.user %} data-guest{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · AI Resume Screening</title>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block body_class %}app{% endblock %}">
+{% block shell %}
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="brand" href="{{ url_for('dashboard.index') }}"><span class="logo">R</span><span>Resume<b>Screen</b> AI</span></a>
+    {% set nav = [
+      ('dashboard.index','Dashboard','dashboard'), ('resumes.upload','Upload Resume','upload'),
+      ('resumes.index','Resume Analysis','file'), ('jobs.index','Job Descriptions','briefcase'),
+      ('matching.index','Resume Matching','match'), ('matching.ranking','Candidate Ranking','rank'),
+      ('matching.skill_gap','Skill Gap Analysis','gap'), ('reports.index','Reports','report'),
+      ('settings.index','Settings','settings')] %}
+    <nav>
+      {% for endpoint, label, ic in nav %}
+        <a class="nav-link {% if request.endpoint == endpoint or (endpoint == 'resumes.index' and request.endpoint == 'resumes.detail') %}active{% endif %}" href="{{ url_for(endpoint) }}">{{ icon(ic) }}<span>{{ label }}</span></a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-foot">
+      <div class="who"><span class="avatar">{{ (g.user.full_name or g.user.username)[:1]|upper }}</span>
+        <div><strong>{{ g.user.full_name or g.user.username }}</strong><small>{{ g.user.email }}</small></div></div>
+      <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="btn btn-ghost btn-block" type="submit">{{ icon('logout') }} Sign out</button></form>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu">{{ icon('menu') }}</button>
+      <h1 class="page-title">{% block heading %}{{ self.title() }}{% endblock %}</h1>
+      <div class="topbar-actions">{% block actions %}{% endblock %}
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle dark/light theme" data-url="{{ url_for('settings.theme') }}" data-csrf="{{ csrf_token }}">{{ icon('sun') }}</button>
+      </div>
+    </header>
+    <main class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flashes">{% for cat, msg in messages %}<div class="alert alert-{{ cat }}" role="alert">{{ msg }}</div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      <footer class="foot">Similarity scores are screening aids, not hiring decisions. Review every candidate manually.</footer>
+    </main>
+  </div>
+</div>
+{% endblock %}
+<script src="{{ url_for('static', filename='js/vendor/chart.umd.min.js') }}" onerror="window.__noLocalChart=true"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

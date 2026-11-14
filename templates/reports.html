@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import empty_state, icon with context %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<section class="grid-2">
+  <article class="card"><div class="card-head"><h2>Candidate ranking exports</h2></div>
+    {% if jobs %}<table class="table"><thead><tr><th>Job</th><th>Results</th><th>CSV</th><th>PDF</th></tr></thead><tbody>
+      {% for j in jobs %}<tr><td>{{ j.title }}</td><td>{{ j.n }}</td>
+        <td>{% if j.n %}<a href="{{ url_for('reports.ranking_csv', job_id=j.id) }}">{{ icon('download') }} CSV</a>{% else %}<span class="muted small">Run matching</span>{% endif %}</td>
+        <td>{% if j.n %}<a href="{{ url_for('reports.ranking_pdf', job_id=j.id) }}">{{ icon('download') }} PDF</a>{% endif %}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="muted">Create a job to export rankings.</p>{% endif %}</article>
+  <article class="card"><div class="card-head"><h2>Matching results export</h2></div>
+    <p class="muted">One CSV row per resume/job pair, including score components and skills.</p>
+    {% if total_matches %}<a class="btn btn-primary" href="{{ url_for('reports.matching_csv') }}">{{ icon('download') }} Download all ({{ total_matches }}) results CSV</a>{% else %}<p class="muted small">No match results yet.</p>{% endif %}</article>
+</section>
+<section class="card"><div class="card-head"><h2>Individual candidate reports (PDF)</h2></div>
+  {% if resumes %}<table class="table"><thead><tr><th>Candidate</th><th>File</th><th></th></tr></thead><tbody>
+    {% for r in resumes %}<tr><td><a href="{{ url_for('resumes.detail', resume_id=r.id) }}">{{ r.name }}</a></td><td class="muted small">{{ r.original_filename }}</td>
+      <td><a href="{{ url_for('reports.resume_pdf', resume_id=r.id) }}">{{ icon('download') }} Download PDF</a></td></tr>{% endfor %}
+  </tbody></table>{% else %}{{ empty_state('No resumes yet', 'Upload resumes to generate candidate reports.', url_for('resumes.upload'), 'Upload resumes') }}{% endif %}</section>
+{% endblock %}

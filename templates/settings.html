@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<section class="grid-2">
+  <article class="card"><h2>Profile &amp; matching</h2>
+    <form method="post">
+      {{ csrf() }}
+      <label class="field"><span>Display name</span><input name="full_name" value="{{ g.user.full_name or '' }}" maxlength="80"></label>
+      <fieldset class="field"><legend>Theme</legend>
+        <label class="inline"><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme == 'dark' }}> Dark</label>
+        <label class="inline"><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme == 'light' }}> Light</label></fieldset>
+      <h3 class="sub">Score weights (%)</h3>
+      <p class="muted small">Relative importance of each component. They are normalised, so they need not add to 100. Components that do not apply to a job are dropped.</p>
+      <div class="row-2">{% for key, label in labels.items() %}
+        <label class="field"><span>{{ label }}</span><input type="number" name="w_{{ key }}" min="0" max="100" step="1" value="{{ (weights[key]*100)|round|int }}"></label>{% endfor %}</div>
+      <button class="btn btn-primary" type="submit">Save settings</button>
+    </form></article>
+  <article class="card"><h2>Change password</h2>
+    <form method="post" action="{{ url_for('settings.password') }}">
+      {{ csrf() }}
+      <label class="field"><span>Current password</span><input type="password" name="current_password" autocomplete="current-password" required></label>
+      <label class="field"><span>New password</span><input type="password" name="new_password" autocomplete="new-password" required minlength="8"></label>
+      <label class="field"><span>Confirm new password</span><input type="password" name="confirm_password" autocomplete="new-password" required></label>
+      <button class="btn" type="submit">Update password</button>
+    </form></article>
+</section>
+<section class="grid-2">
+  <article class="card"><h2>Demo data</h2>
+    <p class="muted">Import the bundled <strong>synthetic</strong> resumes (fictional people, example.com emails) and job descriptions, then match them. Safe to repeat – duplicates are skipped.</p>
+    <form method="post" action="{{ url_for('settings.demo_data') }}">{{ csrf() }}<button class="btn btn-primary" type="submit">Load sample data</button></form></article>
+  <article class="card danger-zone"><h2>Reset workspace</h2>
+    <p class="muted">Permanently deletes all of your resumes, uploaded files, jobs and match results. Your account is kept.</p>
+    <form method="post" action="{{ url_for('settings.reset') }}" data-confirm="This cannot be undone. Reset your workspace?">{{ csrf() }}
+      <label class="field"><span>Type DELETE to confirm</span><input name="confirm" autocomplete="off" required></label>
+      <button class="btn btn-danger" type="submit">Reset workspace</button></form></article>
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block body_class %}auth{% endblock %}
+{% block shell %}
+<div class="auth-wrap">
+  <section class="auth-hero">
+    <a class="brand" href="{{ url_for('auth.login') }}"><span class="logo">R</span><span>Resume<b>Screen</b> AI</span></a>
+    <h2>Screen resumes faster.<br>Decide with a human eye.</h2>
+    <p class="muted">Upload resumes, extract skills with NLP, compare them to job descriptions using TF-IDF and cosine similarity, and see exactly which skills are matched or missing.</p>
+    <ul class="ticks"><li>PDF &amp; DOCX parsing</li><li>Transparent, explainable scores</li><li>Skill-gap analysis and ranking</li><li>Runs fully offline on your machine</li></ul>
+  </section>
+  <section class="auth-card">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="alert alert-{{ cat }}" role="alert">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    {% block auth_form %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

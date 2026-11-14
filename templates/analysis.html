@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, band_badge, chips, csrf, icon with context %}
+{% block title %}{{ resume.name }}{% endblock %}
+{% block heading %}Resume analysis{% endblock %}
+{% block actions %}
+  <a class="btn" href="{{ url_for('reports.resume_pdf', resume_id=resume.id) }}">{{ icon('download') }} PDF report</a>
+  <a class="btn btn-ghost" href="{{ url_for('resumes.download', resume_id=resume.id) }}">Original file</a>
+{% endblock %}
+{% block content %}
+<section class="card profile">
+  <div class="avatar xl">{{ resume.name[:1]|upper }}</div>
+  <div class="profile-main">
+    <h2>{{ resume.name }}</h2>
+    <p class="muted">{{ resume.original_filename }} · {{ resume.file_size|filesize }} · uploaded {{ resume.uploaded_at[:16] }}</p>
+    <dl class="facts">
+      <div><dt>Email</dt><dd>{{ resume.email or 'Not found' }}</dd></div>
+      <div><dt>Phone</dt><dd>{{ resume.phone or 'Not found' }}</dd></div>
+      <div><dt>Highest education</dt><dd>{{ resume.highest_education or 'Not detected' }}</dd></div>
+      <div><dt>Est. experience</dt><dd>{{ '%g'|format(resume.total_experience_years) }} years</dd></div>
+      <div><dt>Skills detected</dt><dd>{{ skill_total }}</dd></div>
+      <div><dt>Words</dt><dd>{{ resume.word_count }}</dd></div>
+    </dl>
+  </div>
+  <form method="post" action="{{ url_for('resumes.delete', resume_id=resume.id) }}" data-confirm="Delete this resume and its match results?">{{ csrf() }}<button class="btn btn-danger" type="submit">{{ icon('trash') }} Delete</button></form>
+</section>
+
+<section class="grid-2">
+  <article class="card"><h2>Technical skills</h2>
+    {% for cat, items in by_category.items() %}<h3 class="sub">{{ cat }}</h3>
+      <div class="chips">{% for s in items %}<span class="chip chip-info" title="{{ s.mentions }} mention(s)">{{ s.skill }}</span>{% endfor %}</div>
+    {% else %}<p class="muted">No skills from the taxonomy were detected.</p>{% endfor %}
+  </article>
+  <article class="card"><h2>Relevant keywords</h2>{{ chips(analysis.keywords, 'neutral', 'No keywords extracted.') }}
+    <h3 class="sub">Education</h3>{% if analysis.education %}<ul class="plain">{% for e in analysis.education %}<li>{{ e }}</li>{% endfor %}</ul>{% else %}<p class="muted small">No education entries detected.</p>{% endif %}
+  </article>
+</section>
+
+<section class="grid-3">
+  <article class="card"><h2>Work experience</h2>{% if analysis.experience %}<ul class="plain">{% for e in analysis.experience %}<li>{{ e }}</li>{% endfor %}</ul>{% else %}<p class="muted small">No experience section detected.</p>{% endif %}</article>
+  <article class="card"><h2>Projects</h2>{% if analysis.projects %}<ul class="plain">{% for e in analysis.projects %}<li>{{ e }}</li>{% endfor %}</ul>{% else %}<p class="muted small">No projects section detected.</p>{% endif %}</article>
+  <article class="card"><h2>Certifications</h2>{% if analysis.certifications %}<ul class="plain">{% for e in analysis.certifications %}<li>{{ e }}</li>{% endfor %}</ul>{% else %}<p class="muted small">No certifications detected.</p>{% endif %}</article>
+</section>
+
+<section class="card"><div class="card-head"><h2>Job matches</h2><a href="{{ url_for('matching.index') }}">Run matching</a></div>
+  {% if matches %}<table class="table"><thead><tr><th>Job</th><th class="w-score">Similarity</th><th>Alignment</th><th>Matched</th><th>Missing</th><th></th></tr></thead><tbody>
+    {% for m in matches %}<tr><td>{{ m.job_title }}</td><td>{{ score_bar(m.overall_score) }}</td><td>{{ band_badge(m.overall_score) }}</td><td>{{ m.matched_skills|length }}</td><td>{{ m.missing_skills|length }}</td><td><a href="{{ url_for('matching.result', match_id=m.id) }}">Details</a></td></tr>{% endfor %}
+  </tbody></table>{% else %}<p class="muted">This resume has not been matched against a job yet.</p>{% endif %}
+</section>
+{% endblock %}

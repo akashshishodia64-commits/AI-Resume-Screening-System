@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}{{ 'Edit job' if job else 'New job' }}{% endblock %}
+{% block content %}
+<section class="card form-card">
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label class="field"><span>Job title *</span><input name="title" value="{{ form.get('title','') }}" maxlength="120" required placeholder="e.g. Python Developer"></label>
+    <label class="field"><span>Job description *</span><textarea name="description" rows="9" required minlength="30" placeholder="Paste the full job description…">{{ form.get('description','') }}</textarea></label>
+    <label class="field"><span>Required technical skills</span><textarea name="required_skills" rows="2" placeholder="Python, Flask, SQL, Machine Learning, REST API, Git">{{ form.get('required_skills','') }}</textarea>
+      <small class="muted">Separate with commas. Leave blank to auto-detect from the description. Aliases are normalised (e.g. "sklearn" → Scikit-learn).</small></label>
+    <div class="row-2">
+      <label class="field"><span>Minimum experience (years)</span><input type="number" name="min_experience_years" min="0" max="50" step="0.5" value="{{ form.get('min_experience_years','0') }}"></label>
+      <label class="field"><span>Education qualification</span><input name="education_requirement" maxlength="200" value="{{ form.get('education_requirement','') }}" placeholder="e.g. Bachelor's degree in Computer Science"></label>
+    </div>
+    <div class="actions"><button class="btn btn-primary" type="submit">{{ 'Save changes' if job else 'Create job' }}</button><a class="btn btn-ghost" href="{{ url_for('jobs.index') }}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

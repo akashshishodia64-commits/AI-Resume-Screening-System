@@ -1,0 +1,60 @@
+[
+  {
+    "title": "Python Developer",
+    "description": "We are hiring a Python Developer to build and maintain backend services. You will design REST APIs with Flask, work with SQL databases, write unit tests and collaborate using Git. Exposure to machine learning is a plus.",
+    "required_skills": [
+      "Python",
+      "Flask",
+      "SQL",
+      "Machine Learning",
+      "REST API",
+      "Git"
+    ],
+    "min_experience_years": 2,
+    "education_requirement": "Bachelor's degree in Computer Science or related field"
+  },
+  {
+    "title": "Data Analyst",
+    "description": "Join our analytics team to turn business data into insight. You will clean and analyse data, write SQL queries, build Power BI dashboards and present findings to stakeholders. Strong Excel and data visualization skills required.",
+    "required_skills": [
+      "SQL",
+      "Excel",
+      "Power BI",
+      "Python",
+      "Pandas",
+      "Data Visualization"
+    ],
+    "min_experience_years": 0,
+    "education_requirement": "Bachelor's degree"
+  },
+  {
+    "title": "Machine Learning Engineer",
+    "description": "Looking for a Machine Learning Engineer to train, evaluate and deploy models. You will work with Python, TensorFlow or PyTorch, scikit-learn and NLP techniques, and ship models as REST APIs using Docker.",
+    "required_skills": [
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "TensorFlow",
+      "Scikit-learn",
+      "NLP",
+      "Docker"
+    ],
+    "min_experience_years": 2,
+    "education_requirement": "Bachelor's or Master's degree"
+  },
+  {
+    "title": "Frontend Developer",
+    "description": "Build responsive user interfaces with React and TypeScript. You will consume REST APIs, write clean HTML and CSS, and collaborate with designers and backend engineers using Git.",
+    "required_skills": [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "HTML",
+      "CSS",
+      "REST API",
+      "Git"
+    ],
+    "min_experience_years": 1,
+    "education_requirement": "Bachelor's degree"
+  }
+]

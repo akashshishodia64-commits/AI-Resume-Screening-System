@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import score_bar, band_badge, chips, icon with context %}
+{% block title %}Match details{% endblock %}
+{% block actions %}<a class="btn" href="{{ url_for('matching.ranking', job_id=m.job_id) }}">Back to ranking</a>
+  <a class="btn btn-ghost" href="{{ url_for('matching.skill_gap', resume_id=m.resume_id, job_id=m.job_id) }}">Skill gap view</a>{% endblock %}
+{% block content %}
+<section class="card hero-score">
+  <div class="gauge {{ m.overall_score|band_css }}" style="--p:{{ m.overall_score }}"><span>{{ '%.0f'|format(m.overall_score) }}<small>%</small></span></div>
+  <div><h2><a href="{{ url_for('resumes.detail', resume_id=m.resume_id) }}">{{ m.candidate_name }}</a> <span class="muted">for</span> {{ m.job_title }}</h2>
+    <p>{{ band_badge(m.overall_score) }} <span class="muted small">Text-similarity score · matched {{ m.created_at[:16] }} UTC · pool of {{ m.corpus_size }} documents</span></p>
+    <p class="muted small">{{ disclaimer }}</p></div>
+</section>
+
+<section class="card"><h2>Score breakdown</h2>
+  <div class="breakdown">
+    <div><span>Required-skill match</span>{% if m.skill_score is not none %}{{ score_bar(m.skill_score) }}{% else %}<em class="muted small">Not applicable (no required skills)</em>{% endif %}</div>
+    <div><span>TF-IDF cosine similarity</span>{{ score_bar(m.tfidf_score) }}</div>
+    <div><span>Keyword overlap</span>{{ score_bar(m.keyword_score) }}</div>
+    <div><span>Experience fit</span>{% if m.experience_score is not none %}{{ score_bar(m.experience_score) }}{% else %}<em class="muted small">Not applicable (no minimum set)</em>{% endif %}</div>
+    <div><span>Education requirement</span><strong>{% if m.education_met is none %}<span class="muted">Not assessed</span>{% elif m.education_met %}<span class="ok">Appears to be met</span>{% else %}<span class="warn">Not confirmed</span>{% endif %}</strong> <small class="muted">(informational, not scored)</small></div>
+  </div>
+</section>
+
+<section class="grid-2">
+  <article class="card"><h2>Matching skills <span class="count">{{ m.matched_skills|length }}</span></h2>{{ chips(m.matched_skills, 'ok', 'No required skills matched.') }}
+    <h3 class="sub">Relevant keywords found</h3>{{ chips(m.keywords, 'neutral', 'No keyword overlap.') }}</article>
+  <article class="card"><h2>Missing skills <span class="count bad">{{ m.missing_skills|length }}</span></h2>{{ chips(m.missing_skills, 'bad', 'No missing skills') }}</article>
+</section>
+<section class="grid-3">
+  <article class="card"><h2>Candidate strengths</h2><ul class="plain">{% for s in m.strengths %}<li>{{ s }}</li>{% endfor %}</ul></article>
+  <article class="card"><h2>Skill gaps</h2><ul class="plain">{% for s in m.gaps %}<li>{{ s }}</li>{% endfor %}</ul></article>
+  <article class="card"><h2>Recommendations</h2>{% if m.recommendations %}<ul class="plain">{% for s in m.recommendations %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}<p class="muted">No recommendations – all required skills are present.</p>{% endif %}</article>
+</section>
+{% endblock %}
